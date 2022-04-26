@@ -1,4 +1,4 @@
-const models = [new Model()];
+const models = [];
 var cameraPosition = [0, 0, 100];
 var target = [0, 0, 0];
 function main() {

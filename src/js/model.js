@@ -7,10 +7,21 @@ class Model {
     this.setUniforms();
 
     this.translations = {
+      x: random(),
+      y: random() / 2,
+      z: random() / 10,
+      r: 0,
+    };
+    this.rotate = {
       x: 0,
       y: 0,
       z: 0,
-      r: 0,
+    };
+
+    this.scale = {
+      x: 1,
+      y: 1,
+      z: 1,
     };
   }
 
@@ -59,13 +70,13 @@ class Model {
     this.gl.bindVertexArray(this.vao);
     this.computeMatrix(
       viewProjectionMatrix,
-      [this.translations.x, config.translateY, config.translateZ],
-      config.rotateX,
-      config.rotateY,
-      config.rotateZ,
-      config.scaleX,
-      config.scaleY,
-      config.scaleZ
+      [this.translations.x, this.translations.y, this.translations.z],
+      this.rotate.x,
+      this.rotate.y,
+      this.rotate.z,
+      this.scale.x,
+      this.scale.y,
+      this.scale.z
     );
     twgl.setUniforms(this.meshProgramInfo, this.uniforms);
     twgl.drawBufferInfo(this.gl, this.bufferInfo);
