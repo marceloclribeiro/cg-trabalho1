@@ -9,18 +9,25 @@ var config = {
   scaleY: 1,
   scaleZ: 1,
   translateCameraX: 0,
+  focus: false,
 };
 
 const loadGUI = () => {
   const gui = new dat.GUI();
-  gui.add(config, "rotateX", 0, 20, 0.5);
-  gui.add(config, "rotateY", 0, 20, 0.5);
-  gui.add(config, "rotateZ", 0, 20, 0.5);
-  gui.add(config, "translateX", -100, 100, 0.5);
-  gui.add(config, "translateY", -100, 100, 0.5);
-  gui.add(config, "translateZ", -100, 100, 0.5);
-  gui.add(config, "scaleX", -5, 5, 0.5);
-  gui.add(config, "scaleY", -5, 5, 0.5);
-  gui.add(config, "scaleZ", -5, 5, 0.5);
-  gui.add(config, "translateCameraX", -100, 100, 0.5);
+  const guiElement = gui.addFolder("Element");
+  const guiRotations = guiElement.addFolder("Rotations");
+  const guiTranslations = guiElement.addFolder("Translations");
+  const guiScale = guiElement.addFolder("Scale");
+
+  guiRotations.add(config, "rotateX", 0, 20, 0.5);
+  guiRotations.add(config, "rotateY", 0, 20, 0.5);
+  guiRotations.add(config, "rotateZ", 0, 20, 0.5);
+  guiTranslations.add(models[0].translations, "x", -100, 100, 0.5);
+  guiTranslations.add(config, "translateY", -100, 100, 0.5);
+  guiTranslations.add(config, "translateZ", -100, 100, 0.5);
+  guiScale.add(config, "scaleX", -5, 5, 0.5);
+  guiScale.add(config, "scaleY", -5, 5, 0.5);
+  guiScale.add(config, "scaleZ", -5, 5, 0.5);
+  guiScale.add(config, "translateCameraX", -100, 100, 0.5);
+  gui.add(config, "focus");
 };
