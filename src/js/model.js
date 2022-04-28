@@ -1,12 +1,10 @@
 class Model {
   constructor() {
-    this.gl = gl;
-    this.meshProgramInfo = meshProgramInfo;
     this.bufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 20);
-    this.setVao(gl, this.meshProgramInfo);
+    this.setVao(gl, meshProgramInfo);
     this.setUniforms();
 
-    this.translations = {
+    this.translate = {
       x: random(),
       y: random() / 2,
       z: random() / 10,
@@ -23,12 +21,20 @@ class Model {
       y: 1,
       z: 1,
     };
+
+    this.animationParams = {
+      type: "translation",
+      axis: "x",
+      value: 0,
+    };
+
+    this.animationsArray = [];
   }
 
   setVao() {
     this.vao = twgl.createVAOFromBufferInfo(
-      this.gl,
-      this.meshProgramInfo,
+      gl,
+      meshProgramInfo,
       this.bufferInfo
     );
   }
@@ -42,6 +48,39 @@ class Model {
       u_colorMult: [r, g, b, 1],
       u_matrix: m4.identity,
     };
+  }
+
+  animations() {
+    this.animationsArray.push({
+      type: this.animationParams.type,
+      axis: this.animationParams.axis,
+      value: this.animationParams.value,
+    });
+  }
+
+  animate() {
+    var params;
+    var count = 0;
+    var index = 0;
+    if (this.animationsArray == []) return;
+    var interval = setInterval(() => {
+      params = this.animationsArray[index];
+      if (params.type === "translation")
+        this.translate = checkAxis(this.translate, params.axis, params.value);
+      if (params.type === "rotation")
+        this.rotate = checkAxis(this.rotate, params.axis, params.value);
+      count += 1;
+      console.log(count);
+      if (count >= Math.abs(params.value)) {
+        count = 0;
+        index += 1;
+      }
+      if (index === this.animationsArray.length) {
+        clearInterval(interval);
+        this.animationsArray = [];
+        return;
+      }
+    }, 40);
   }
 
   computeMatrix(
@@ -60,17 +99,17 @@ class Model {
       translation[1],
       translation[2]
     );
-    matrix = m4.xRotate(matrix, xRotation);
-    matrix = m4.yRotate(matrix, yRotation);
-    matrix = m4.zRotate(matrix, zRotation);
+    matrix = m4.xRotate(matrix, degToRad(xRotation));
+    matrix = m4.yRotate(matrix, degToRad(yRotation));
+    matrix = m4.zRotate(matrix, degToRad(zRotation));
     matrix = m4.scale(matrix, xScale, yScale, zScale);
     this.uniforms.u_matrix = matrix;
   }
   drawModel(viewProjectionMatrix) {
-    this.gl.bindVertexArray(this.vao);
+    gl.bindVertexArray(this.vao);
     this.computeMatrix(
       viewProjectionMatrix,
-      [this.translations.x, this.translations.y, this.translations.z],
+      [this.translate.x, this.translate.y, this.translate.z],
       this.rotate.x,
       this.rotate.y,
       this.rotate.z,
@@ -78,7 +117,7 @@ class Model {
       this.scale.y,
       this.scale.z
     );
-    twgl.setUniforms(this.meshProgramInfo, this.uniforms);
-    twgl.drawBufferInfo(this.gl, this.bufferInfo);
+    twgl.setUniforms(meshProgramInfo, this.uniforms);
+    twgl.drawBufferInfo(gl, this.bufferInfo);
   }
 }
