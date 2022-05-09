@@ -16,8 +16,18 @@ const checkAxis = (object, axis, value) => {
     case "z":
       obj.z += value / Math.abs(value);
       break;
+    case "angle":
+      obj.angle += value / Math.abs(value);
     default:
       break;
   }
   return obj;
+};
+
+const objectToVector = (object) => {
+  return [object.x, object.y, object.z];
+};
+
+const targetModel = () => {
+  models.find((model) => model.target == true);
 };

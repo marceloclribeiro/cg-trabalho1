@@ -15,6 +15,11 @@ class Model {
       y: 0,
       z: 0,
     };
+    this.pRotate = {
+      distance: 0,
+      angle: 0,
+      axis: "x",
+    };
 
     this.scale = {
       x: 1,
@@ -26,9 +31,12 @@ class Model {
       type: "translation",
       axis: "x",
       value: 0,
+      distance: 0,
     };
 
     this.animationsArray = [];
+
+    this.target = false;
   }
 
   setVao() {
@@ -55,6 +63,7 @@ class Model {
       type: this.animationParams.type,
       axis: this.animationParams.axis,
       value: this.animationParams.value,
+      distance: this.animationParams.distance,
     });
   }
 
@@ -69,8 +78,12 @@ class Model {
         this.translate = checkAxis(this.translate, params.axis, params.value);
       if (params.type === "rotation")
         this.rotate = checkAxis(this.rotate, params.axis, params.value);
+      if (params.type === "point rotation") {
+        this.pRotate = checkAxis(this.pRotate, "angle", params.value);
+        this.pRotate.axis = params.axis;
+        this.pRotate.distance = params.distance;
+      }
       count += 1;
-      console.log(count);
       if (count >= Math.abs(params.value)) {
         count = 0;
         index += 1;
@@ -81,6 +94,30 @@ class Model {
         return;
       }
     }, 40);
+  }
+
+  pointRotate(matrix, distance) {
+    {
+      matrix = m4.translate(matrix, distance, distance, distance);
+
+      switch (this.pRotate.axis) {
+        case "x":
+          matrix = m4.xRotate(matrix, degToRad(this.pRotate.angle));
+          break;
+        case "y":
+          matrix = m4.yRotate(matrix, degToRad(this.pRotate.angle));
+          break;
+        case "z":
+          matrix = m4.zRotate(matrix, degToRad(this.pRotate.angle));
+          break;
+        default:
+          break;
+      }
+
+      matrix = m4.translate(matrix, -distance, -distance, -distance);
+
+      return matrix;
+    }
   }
 
   computeMatrix(
@@ -103,13 +140,20 @@ class Model {
     matrix = m4.yRotate(matrix, degToRad(yRotation));
     matrix = m4.zRotate(matrix, degToRad(zRotation));
     matrix = m4.scale(matrix, xScale, yScale, zScale);
+
+    matrix = this.pointRotate(matrix, this.pRotate.distance);
     this.uniforms.u_matrix = matrix;
   }
   drawModel(viewProjectionMatrix) {
+    if (this.target) {
+      cameras[manageCamera.index].target.x = this.translate.x;
+      cameras[manageCamera.index].target.y = this.translate.y;
+      cameras[manageCamera.index].target.z = this.translate.z;
+    }
     gl.bindVertexArray(this.vao);
     this.computeMatrix(
       viewProjectionMatrix,
-      [this.translate.x, this.translate.y, this.translate.z],
+      objectToVector(this.translate),
       this.rotate.x,
       this.rotate.y,
       this.rotate.z,
